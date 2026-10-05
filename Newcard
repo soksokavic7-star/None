@@ -1,0 +1,177 @@
+local oldGui = game:GetService("CoreGui"):FindFirstChild("BrainrotVictoryHub")
+if oldGui then oldGui:Destroy() end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Remote = ReplicatedStorage:WaitForChild("NPCBattleVictoryEvent")
+local LocalPlayer = Players.LocalPlayer
+
+local selectedWorld = "Hollow Hill"
+local worldIndex = 18
+local canClick = true
+
+local WorldsOrder = {
+    "World 1", "World 2", "World 3", "World 4", "World 5", "World 6", 
+    "World 7", "World 8", "World 9", "World 10", "World 11", "World 12", "World 13", "World 14",
+    "Lionelo Cactuseli", "Magmalodonte Vulcanino", "Onironi Sakuroni", "Hollow Hill"
+}
+
+local WorldsData = {
+    ["World 1"] = { WorldId = "World1", NPCs = {"NoobiniPizzanini", "LiriliLarila", "TralaleroTralala"} },
+    ["World 2"] = { WorldId = "World2", NPCs = {"ChimpanziniBananini", "CappucinoAssassino", "BonecaAmbalabu"} },
+    ["World 3"] = { WorldId = "World3", NPCs = {"PipiKiwi", "BanditoBobritto", "GattatinoNyanino"} },
+    ["World 4"] = { WorldId = "World4", NPCs = {"SpioniroGolubiro", "Matteo", "BombardiroCrocodilo"} },
+    ["World 5"] = { WorldId = "World5", NPCs = {"OrcaleroOrcala", "LosNoobinis", "SixSevenKing"} },
+    ["World 6"] = { WorldId = "World6", NPCs = {"FrigoCamelo", "BombombiniGusini", "Tralaledon", "BalerinaCapucina"} },
+    ["World 7"] = { WorldId = "World7", NPCs = {"World7NPC1", "World7NPC2", "TorrtuginniDragonfrutinni"} },
+    ["World 8"] = { WorldId = "World8", NPCs = {"World8NPC1", "World8NPC2", "World8NPC3", "LaExtinctGrande"} },
+    ["World 9"] = { WorldId = "World9", NPCs = {"World9NPC1", "World9NPC2", "World9NPC3", "World9Boss"} },
+    ["World 10"] = { WorldId = "World10", NPCs = {"World10NPC1", "World10NPC2", "World10Boss"} },
+    ["World 11"] = { WorldId = "World11", NPCs = {"World11NPC1", "World11NPC2", "World11Boss"} },
+    ["World 12"] = { WorldId = "World12", NPCs = {"World12NPC1", "World12NPC2", "World12Boss"} },
+    ["World 13"] = { WorldId = "World13", NPCs = {"World13NPC1", "World13NPC2", "World13Boss"} },
+    ["World 14"] = { WorldId = "World14", NPCs = {"World14NPC1", "World14NPC2", "World14Boss"} },
+    ["Lionelo Cactuseli"] = { WorldId = "Lobby", NPCs = {"LioneloCactuseli"} },
+    ["Magmalodonte Vulcanino"] = { WorldId = "Lobby", NPCs = {"MagmalodonteVulcanino"} },
+    ["Onironi Sakuroni"] = { WorldId = "Lobby", NPCs = {"OnironiSakuroni"} },
+    ["Hollow Hill"] = { WorldId = "HalloweenEvent", NPCs = {"HalloweenScarecrow", "HalloweenGhost", "HalloweenPumpkinKing"} }
+}
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BrainrotVictoryHub"
+ScreenGui.Parent = game:GetService("CoreGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 220, 0, 150)
+MainFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Text = "  dobridada"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 14
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = MainFrame
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 10)
+
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+MinimizeBtn.Position = UDim2.new(1, -30, 0, 2)
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+MinimizeBtn.Font = Enum.Font.SourceSansBold
+MinimizeBtn.TextSize = 16
+MinimizeBtn.Parent = MainFrame
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0, 5)
+
+local WinBtn = Instance.new("TextButton")
+WinBtn.Size = UDim2.new(0.9, 0, 0, 45)
+WinBtn.Position = UDim2.new(0.05, 0, 0, 45)
+WinBtn.Text = "⚔️ AUTO WIN TARGET"
+WinBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+WinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+WinBtn.Font = Enum.Font.SourceSansBold
+WinBtn.TextSize = 14
+WinBtn.Parent = MainFrame
+Instance.new("UICorner", WinBtn).CornerRadius = UDim.new(0, 6)
+
+WinBtn.MouseButton1Click:Connect(function()
+    if canClick then
+        canClick = false
+        WinBtn.BackgroundColor3 = Color3.fromRGB(100, 40, 40)
+        local data = WorldsData[selectedWorld]
+        if data then
+            for _, npc in ipairs(data.NPCs) do
+                Remote:FireServer(data.WorldId, npc, true)
+                task.wait(0.2)
+            end
+        end
+        task.wait(0.4)
+        WinBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        canClick = true
+    end
+end)
+
+local WorldLabel = Instance.new("TextLabel")
+WorldLabel.Size = UDim2.new(0.5, 0, 0, 35)
+WorldLabel.Position = UDim2.new(0.25, 0, 0, 100)
+WorldLabel.Text = selectedWorld
+WorldLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+WorldLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+WorldLabel.Font = Enum.Font.SourceSansBold
+WorldLabel.TextSize = 10
+WorldLabel.Parent = MainFrame
+Instance.new("UICorner", WorldLabel).CornerRadius = UDim.new(0, 6)
+
+local LeftBtn = Instance.new("TextButton")
+LeftBtn.Size = UDim2.new(0, 35, 0, 35)
+LeftBtn.Position = UDim2.new(0.05, 0, 0, 100)
+LeftBtn.Text = "<"
+LeftBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+LeftBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LeftBtn.Font = Enum.Font.SourceSansBold
+LeftBtn.TextSize = 16
+LeftBtn.Parent = MainFrame
+Instance.new("UICorner", LeftBtn).CornerRadius = UDim.new(0, 6)
+
+LeftBtn.MouseButton1Click:Connect(function()
+    if worldIndex > 1 then
+        worldIndex = worldIndex - 1
+        selectedWorld = WorldsOrder[worldIndex]
+        WorldLabel.Text = selectedWorld
+    end
+end)
+
+local RightBtn = Instance.new("TextButton")
+RightBtn.Size = UDim2.new(0, 35, 0, 35)
+RightBtn.Position = UDim2.new(0.95, -35, 0, 100)
+RightBtn.Text = ">"
+RightBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+RightBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RightBtn.Font = Enum.Font.SourceSansBold
+RightBtn.TextSize = 16
+RightBtn.Parent = MainFrame
+Instance.new("UICorner", RightBtn).CornerRadius = UDim.new(0, 6)
+
+RightBtn.MouseButton1Click:Connect(function()
+    if worldIndex < #WorldsOrder then
+        worldIndex = worldIndex + 1
+        selectedWorld = WorldsOrder[worldIndex]
+        WorldLabel.Text = selectedWorld
+    end
+end)
+
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Size = UDim2.new(0, 45, 0, 45)
+OpenBtn.Position = UDim2.new(0.1, 0, 0.3, 0)
+OpenBtn.Text = "+"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+OpenBtn.Font = Enum.Font.SourceSansBold
+OpenBtn.TextSize = 22
+OpenBtn.Visible = false
+OpenBtn.Active = true
+OpenBtn.Draggable = true
+OpenBtn.Parent = ScreenGui
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 50)
+
+MinimizeBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = false
+    OpenBtn.Position = MainFrame.Position
+    OpenBtn.Visible = true
+end)
+
+OpenBtn.MouseButton1Click:Connect(function()
+    OpenBtn.Visible = false
+    MainFrame.Position = OpenBtn.Position
+    MainFrame.Visible = true
+end)
